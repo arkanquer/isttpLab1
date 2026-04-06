@@ -1,0 +1,46 @@
+@model HotelBookingSystem.Models.Room
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow border-success">
+                <div class="card-header bg-success text-white">
+                    <h4 class="mb-0">Додати новий номер</h4>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Create">
+                        <div class="mb-3">
+                            <label asp-for="Roomnumber" class="form-label fw-bold">Номер кімнати</label>
+                            <input asp-for="Roomnumber" class="form-control" required />
+                            <span asp-validation-for="Roomnumber" class="text-danger small"></span>
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="Roomtype" class="form-label fw-bold">Тип номера</label>
+                            <select asp-for="Roomtype" class="form-select">
+                                <option value="Standard">Standard</option>
+                                <option value="Luxury">Luxury</option>
+                                <option value="Suite">Suite</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="Pricepernight" class="form-label fw-bold">Ціна за ніч (грн)</label>
+                            <input asp-for="Pricepernight" type="number" step="0.01" min="0" class="form-control" required />
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="Status" class="form-label fw-bold">Статус</label>
+                            <select asp-for="Status" class="form-select">
+                                <option value="available">Вільна</option>
+                                <option value="occupied">Зайнята</option>
+                                <option value="maintenance">Ремонт</option>
+                            </select>
+                        </div>
+                        <div class="d-flex justify-content-between mt-4">
+                            <a asp-action="Index" class="btn btn-secondary">Назад до списку</a>
+                            <button type="submit" class="btn btn-success px-4">Створити номер</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

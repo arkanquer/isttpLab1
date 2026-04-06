@@ -1,0 +1,53 @@
+@model HotelBookingSystem.Models.Room
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow border-warning">
+                <div class="card-header bg-warning">
+                    <h4 class="mb-0 text-dark">Редагування номера (ID: @Model.Roomid)</h4>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Edit">
+                        <input type="hidden" asp-for="Roomid" />
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold text-muted">ID в базі</label>
+                            <input class="form-control bg-light" value="@Model.Roomid" readonly />
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Roomnumber" class="form-label">Номер кімнати</label>
+                            <input asp-for="Roomnumber" class="form-control" />
+                            <span asp-validation-for="Roomnumber" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Roomtype" class="form-label">Тип</label>
+                            <input asp-for="Roomtype" class="form-control" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Pricepernight" class="form-label">Ціна</label>
+                            <input asp-for="Pricepernight" class="form-control" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Status" class="form-label">Статус</label>
+                            <select asp-for="Status" class="form-select">
+                                <option value="available">Вільна</option>
+                                <option value="occupied">Зайнята</option>
+                                <option value="maintenance">Ремонт</option>
+                            </select>
+                        </div>
+
+                        <div class="d-flex justify-content-between mt-4">
+                            <a asp-action="Index" class="btn btn-outline-secondary">Скасувати</a>
+                            <button type="submit" class="btn btn-warning">💾 Зберегти зміни</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

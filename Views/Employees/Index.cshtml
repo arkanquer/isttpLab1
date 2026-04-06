@@ -1,0 +1,73 @@
+@model IEnumerable<HotelBookingSystem.Models.Employee>
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold text-dark">Персонал готелю</h2>
+        <a asp-action="Create" class="btn btn-success shadow-sm px-4">➕ Додати працівника</a>
+    </div>
+
+    <div class="btn-group mb-4 shadow-sm" role="group">
+        <a asp-action="Index" asp-route-status="active" 
+           class="btn @(ViewData["CurrentStatus"]?.ToString() == "active" ? "btn-dark" : "btn-outline-dark") px-4">
+            Працюють
+        </a>
+        <a asp-action="Index" asp-route-status="fired" 
+           class="btn @(ViewData["CurrentStatus"]?.ToString() == "fired" ? "btn-danger" : "btn-outline-danger") px-4">
+            Звільнені
+        </a>
+    </div>
+
+    <div class="card shadow-sm border-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th style="width: 60px;">ID</th>
+                        <th>ПІБ</th>
+                        <th>Посада</th>
+                        <th>Email</th>
+                        <th>Телефон</th>
+                        <th class="text-center">Дії</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (!Model.Any())
+                    {
+                        <tr>
+                            <td colspan="6" class="text-center py-5 text-muted">
+                                <i class="bi bi-people fs-2 d-block mb-2"></i>
+                                Список порожній.
+                            </td>
+                        </tr>
+                    }
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td class="text-muted fw-bold">@item.Employeeid</td>
+                            <td class="fw-bold">@item.Fullname</td>
+                            <td>
+                                @if (ViewData["CurrentStatus"]?.ToString() == "fired")
+                                {
+                                    <span class="badge bg-danger">Звільнений</span>
+                                }
+                                else
+                                {
+                                    @item.Position
+                                }
+                            </td>
+                            <td>@item.Email</td>
+                            <td>@item.Phonenumber</td>
+                            <td class="text-center">
+                                <div class="btn-group">
+                                    <a asp-action="Edit" asp-route-id="@item.Employeeid" class="btn btn-sm btn-outline-primary" title="Редагувати">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

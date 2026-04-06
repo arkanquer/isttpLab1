@@ -1,0 +1,83 @@
+@model IEnumerable<HotelBookingSystem.Models.Service>
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold text-dark">Каталог послуг</h2>
+        <a asp-action="Create" class="btn btn-success shadow-sm px-4">➕ Додати послугу</a>
+    </div>
+
+    <div class="btn-group mb-4 shadow-sm" role="group">
+        <a asp-action="Index" asp-route-status="active" 
+           class="btn @(ViewData["CurrentStatus"]?.ToString() == "active" ? "btn-dark" : "btn-outline-dark") px-4">
+            Доступні
+        </a>
+        <a asp-action="Index" asp-route-status="archived" 
+           class="btn @(ViewData["CurrentStatus"]?.ToString() == "archived" ? "btn-danger" : "btn-outline-danger") px-4">
+            Архів
+        </a>
+    </div>
+
+    <div class="card shadow-sm border-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th style="width: 20%;">Назва послуги</th>
+                        <th style="width: 35%;">Опис</th> 
+                        <th style="width: 15%;">Ціна</th>
+                        <th style="width: 15%;" class="text-center">Статус</th>
+                        <th style="width: 15%;" class="text-center"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (!Model.Any())
+                    {
+                        <tr>
+                            <td colspan="5" class="text-center py-5 text-muted">Список порожній.</td>
+                        </tr>
+                    }
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td class="fw-bold">@item.Name</td>
+                            <td class="text-muted small">
+                                @(string.IsNullOrEmpty(item.Description) ? "Опис відсутній" : item.Description)
+                            </td>
+                            <td class="fw-bold">@item.Price?.ToString("N2") грн</td>
+                            <td class="text-center">
+                                @if (item.IsAvailable)
+                                {
+                                    <span class="badge bg-success">Активна</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary">В архіві</span>
+                                }
+                            </td>
+                            <td class="text-center">
+                                <div class="btn-group">
+                                    <a asp-action="Edit" asp-route-id="@item.Serviceid" class="btn btn-sm btn-outline-primary">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    
+                                    @if (item.IsAvailable)
+                                    {
+                                        <form asp-action="Archive" asp-route-id="@item.Serviceid" method="post" class="d-inline">
+                                            <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                                        </form>
+                                    }
+                                    else
+                                    {
+                                        <form asp-action="Restore" asp-route-id="@item.Serviceid" method="post" class="d-inline">
+                                            <button type="submit" class="btn btn-sm btn-outline-success"><i class="bi bi-arrow-up-circle"></i></button>
+                                        </form>
+                                    }
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

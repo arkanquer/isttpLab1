@@ -1,0 +1,69 @@
+@model HotelBookingSystem.Models.Booking
+
+@{
+    ViewData["Title"] = "Редагування бронювання";
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow border-warning">
+                <div class="card-header bg-warning text-dark">
+                    <h4 class="mb-0">Редагування бронювання (ID: @Model.Bookingid)</h4>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Edit">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" asp-for="Bookingid" />
+                        <input type="hidden" asp-for="Createdat" />
+                        <input type="hidden" asp-for="Roompriceatbooking" />
+
+                        <div class="row">
+                            <div class="col-md-12 mb-3">
+                                <label class="form-label fw-bold text-muted">ID запису в системі</label>
+                                <input class="form-control bg-light" value="@Model.Bookingid" readonly />
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Клієнт</label>
+                                <select asp-for="Clientid" class="form-select" asp-items="ViewBag.ClientIdList"></select>                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Номер кімнати</label>
+                                <select asp-for="Roomid" class="form-select" asp-items="ViewBag.RoomIdList"></select>
+                            </div>
+
+                            <div class="col-md-12 mb-3">
+                                <label class="form-label">Адміністратор</label>
+                                <select asp-for="Employeeid" class="form-select" asp-items="ViewBag.EmployeeIdList"></select>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Дата заїзду</label>
+                                <input asp-for="Checkindate" type="date" class="form-control" />
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Дата виїзду</label>
+                                <input asp-for="Checkoutdate" type="date" class="form-control" />
+                            </div>
+
+                            <div class="col-md-12 mb-3">
+                                <label class="form-label">Статус бронювання</label>
+                                <select asp-for="Status" class="form-select">
+                                    <option value="confirmed">Підтверджено</option>
+                                    <option value="completed">Завершено (виїхав)</option>
+                                    <option value="cancelled">Скасовано</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between mt-3">
+                            <a asp-action="Index" class="btn btn-outline-secondary">Скасувати</a>
+                            <button type="submit" class="btn btn-warning">Зберегти зміни</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

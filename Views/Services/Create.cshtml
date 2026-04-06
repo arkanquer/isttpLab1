@@ -1,0 +1,34 @@
+@model HotelBookingSystem.Models.Service
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow border-success">
+                <div class="card-header bg-success text-white">
+                    <h4 class="mb-0">Додати нову послугу</h4>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Create">
+                        <div class="mb-3">
+                            <label asp-for="Name" class="form-label fw-bold">Назва послуги</label>
+                            <input asp-for="Name" class="form-control" required />
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="Price" class="form-label fw-bold">Вартість (грн)</label>
+                            <input asp-for="Price" type="number" step="0.01" class="form-control" required />
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="Description" class="form-label fw-bold">Опис послуги</label>
+                            <textarea asp-for="Description" class="form-control" rows="3"></textarea>
+                            <span asp-validation-for="Description" class="text-danger"></span>
+                        </div>
+                        <div class="d-flex justify-content-between mt-4">
+                            <a asp-action="Index" class="btn btn-secondary">Назад до списку</a>
+                            <button type="submit" class="btn btn-success text-white px-4">Зберегти послугу</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

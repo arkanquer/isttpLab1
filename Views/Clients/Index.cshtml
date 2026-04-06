@@ -1,0 +1,97 @@
+@model IEnumerable<HotelBookingSystem.Models.Client>
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold text-dark">База клієнтів</h2>
+        <a asp-action="Create" class="btn btn-success shadow-sm">➕ Новий клієнт</a>
+    </div>
+
+    <form asp-action="Index" method="get" class="mb-4">
+        <input type="hidden" name="status" value="@ViewData["CurrentStatus"]" />
+        
+        <div class="input-group shadow-sm">
+            <input type="text" name="searchString" class="form-control border-start-0 ps-0" 
+                   placeholder="Введіть ПІБ клієнта для пошуку..." 
+                   value="@ViewData["CurrentFilter"]" />
+            <button type="submit" class="btn btn-dark px-4">Знайти</button>
+            
+            @if (!string.IsNullOrEmpty(ViewData["CurrentFilter"]?.ToString()))
+            {
+                <a asp-action="Index" asp-route-status="@ViewData["CurrentStatus"]" class="btn btn-outline-secondary">
+                    Очистити
+                </a>
+            }
+        </div>
+    </form>
+
+    <div class="btn-group mb-4 shadow-sm" role="group">
+        <a asp-action="Index" asp-route-status="active" 
+           class="btn @(ViewData["CurrentStatus"]?.ToString() == "active" ? "btn-dark" : "btn-outline-dark") px-4">
+            Активні
+        </a>
+        <a asp-action="Index" asp-route-status="archived" 
+           class="btn @(ViewData["CurrentStatus"]?.ToString() == "archived" ? "btn-danger" : "btn-outline-danger") px-4">
+            Архів
+        </a>
+    </div>
+
+    <div class="card shadow-sm border-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th style="width: 60px;">ID</th>
+                        <th>ПІБ</th>
+                        <th>Email</th>
+                        <th>Телефон</th>
+                        <th class="text-center" style="width: 120px;"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (!Model.Any())
+                    {
+                        <tr>
+                            <td colspan="5" class="text-center py-5 text-muted">
+                                Клієнтів не знайдено.
+                            </td>
+                        </tr>
+                    }
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td class="text-muted fw-bold">@item.Clientid</td>
+                            <td class="fw-bold">@item.Fullname</td>
+                            <td>@item.Email</td>
+                            <td>@item.Phonenumber</td>
+                            <td class="text-center">
+                                <div class="btn-group">
+                                    <a asp-action="Edit" asp-route-id="@item.Clientid" class="btn btn-sm btn-outline-primary">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+
+                                    @if (ViewData["CurrentStatus"]?.ToString() == "archived")
+                                    {
+                                        <form asp-action="Restore" asp-route-id="@item.Clientid" method="post" class="d-inline">
+                                            <button type="submit" class="btn btn-sm btn-outline-success" title="Відновити">
+                                                <i class="bi bi-arrow-up-circle"></i>
+                                            </button>
+                                        </form>
+                                    }
+                                    else
+                                    {
+                                        <form asp-action="Delete" asp-route-id="@item.Clientid" method="post" class="d-inline"
+                                              onsubmit="return confirm('Відправити клієнта в архів?')">
+                                            <button type="submit" class="btn btn-sm btn-outline-danger" title="В архів">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </form>
+                                    }
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

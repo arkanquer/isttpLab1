@@ -1,0 +1,113 @@
+@model IEnumerable<HotelBookingSystem.Models.Booking>
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold text-dark">Журнал бронювань</h2>
+        <a asp-action="Create" class="btn btn-success px-4 shadow-sm">➕ Нове бронювання</a>
+    </div>
+
+    <div class="card shadow-sm border-0 mb-4 bg-light">
+        <div class="card-body">
+            <form asp-action="Index" method="get" class="row g-3 align-items-end">
+                <div class="col-md-5">
+                    <label class="form-label small fw-bold text-muted">Клієнт</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-white border-end-0">
+                            <i class="bi bi-person text-muted"></i>
+                        </span>
+                        <input type="text" name="searchString" class="form-control border-start-0" 
+                               placeholder="Прізвище або ім'я..." 
+                               value="@ViewData["CurrentFilter"]" />
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label small fw-bold text-muted">Дата заїзду</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-white border-end-0">
+                            <i class="bi bi-calendar-event text-muted"></i>
+                        </span>
+                        <input type="date" name="arrivalDate" class="form-control border-start-0" 
+                               value="@ViewData["ArrivalFilter"]" />
+                    </div>
+                </div>
+
+                <div class="col-md-4 d-flex gap-2">
+                    <button type="submit" class="btn btn-success px-4 flex-grow-1">
+                        <i class="bi bi-funnel"></i> Фільтрувати
+                    </button>
+                    <a asp-action="Index" class="btn btn-outline-secondary" title="Скинути всі фільтри">
+                        <i class="bi bi-arrow-counterclockwise"></i>
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="card shadow-sm border-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th style="width: 70px;" class="ps-3 text-muted">ID</th>
+                        <th>Клієнт</th>
+                        <th>Номер</th>
+                        <th>Адміністратор</th>
+                        <th>Заїзд / Виїзд</th>
+                        <th class="text-center" style="width: 200px;"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (!Model.Any())
+                    {
+                        <tr>
+                            <td colspan="6" class="text-center py-5 text-muted">
+                                <i class="bi bi-search fs-2 d-block mb-2"></i>
+                                Бронювань не знайдено.
+                            </td>
+                        </tr>
+                    }
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td class="ps-3 text-muted fw-bold">@item.Bookingid</td>
+                            <td>
+                                <div class="fw-bold text-dark">@(item.Client?.Fullname ?? "Гість не вказаний")</div>
+                                <small class="text-muted">@(item.Client?.Phonenumber ?? "Телефон відсутній")</small>
+                            </td>
+                            <td>
+                                Кімната @(item.Room?.Roomnumber ?? "—")
+                            </td>
+                            <td>
+                                <span class="text-muted">@(item.Employee?.Fullname ?? "Не призначено")</span>
+                            </td>
+                            <td>
+                                <div class="fw-bold">@item.Checkindate?.ToString("dd.MM.yyyy")</div>
+                                <div class="text-muted small">@item.Checkoutdate?.ToString("dd.MM.yyyy")</div>
+                            </td>
+                            <td class="text-center pe-3">
+                                <div class="btn-group shadow-sm">
+                                    <a asp-controller="BookingServices" asp-action="Index" asp-route-bookingId="@item.Bookingid" 
+                                       class="btn btn-sm btn-success text-white" title="Рахунок та послуги">
+                                       <i class="bi bi-receipt"></i> Рахунок
+                                    </a>
+                                    
+                                    <a asp-action="Edit" asp-route-id="@item.Bookingid" class="btn btn-sm btn-outline-primary" title="Редагувати">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+
+                                    <form asp-action="Cancel" asp-route-id="@item.Bookingid" method="post" class="d-inline"
+                                          onsubmit="return confirm('Ви впевнені, що хочете скасувати це бронювання?')">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger" style="border-top-left-radius: 0; border-bottom-left-radius: 0;">
+                                            <i class="bi bi-trash3"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

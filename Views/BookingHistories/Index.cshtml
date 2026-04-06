@@ -1,0 +1,46 @@
+@model IEnumerable<HotelBookingSystem.Models.BookingHistory>
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Журнал змін статусу</h2>
+        @if (ViewBag.BookingId != null)
+        {
+            <span class="badge bg-dark fs-5">Бронювання №@ViewBag.BookingId</span>
+        }
+    </div>
+
+    <div class="table-responsive shadow-sm rounded">
+        <table class="table table-hover align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>Дата зміни</th>
+                    <th>Клієнт</th>
+                    <th>Попередній статус</th>
+                    <th>Новий статус</th>
+                    <th>Дія</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td class="fw-bold">@item.Changeddate?.ToString("dd.MM.yyyy HH:mm")</td>
+                        <td>@item.Booking?.Client?.Fullname</td>
+                        <td>
+                            <span class="badge bg-secondary opacity-75">@item.Oldstatus</span>
+                        </td>
+                        <td>
+                            <i class="bi bi-arrow-right mx-2"></i>
+                            <span class="badge @(item.Newstatus == "Cancelled" ? "bg-danger" : "bg-success")">
+                                @item.Newstatus
+                            </span>
+                        </td>
+                        <td>
+                            <a asp-controller="Bookings" asp-action="Edit" asp-route-id="@item.Bookingid" class="btn btn-sm btn-link">Перейти до замовлення</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
