@@ -1,8 +1,92 @@
 ﻿@{
-    ViewData["Title"] = "Головна";
+    ViewData["Title"] = "Панель керування";
 }
 
-<div class="text-center mt-5 pt-5">
-    <h1 class="display-4 fw-bold text-dark">Управління готелем</h1>
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold text-uppercase">Аналітика готелю</h2>
+    </div>
 
+    <div class="row g-3 mb-5 text-center">
+        <div class="col-md-6">
+            <div class="card border-dark shadow-sm h-100 py-3">
+                <div class="card-body">
+                    <h2 class="fw-bold mb-0">@ViewBag.RoomsCount</h2>
+                    <small class="text-muted text-uppercase fw-bold">Номери</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card border-primary shadow-sm h-100 py-3">
+                <div class="card-body">
+                    <h2 class="fw-bold mb-0 text-primary">@ViewBag.ActiveBookings</h2>
+                    <small class="text-muted text-uppercase fw-bold">Активні броні</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-7">
+            <div class="card border-dark shadow-sm p-2">
+                <div id="revenueMonthlyChart" style="width: 100%; height: 450px;"></div>
+            </div>
+        </div>
+        <div class="col-lg-5">
+            <div class="card border-dark shadow-sm p-2">
+                <div id="revenueByRoomTypeChart" style="width: 100%; height: 450px;"></div>
+            </div>
+        </div>
+    </div>
 </div>
+
+@section Scripts {
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script type="text/javascript">
+        google.charts.load('current', { 'packages': ['corechart'] });
+        google.charts.setOnLoadCallback(drawCharts);
+
+        async function drawCharts() {
+            try {
+                const resRevMon = await fetch('/api/charts/revenueByMonth');
+                const dataRevMon = await resRevMon.json();
+                renderColumnChart(dataRevMon, 'revenueMonthlyChart', 'Місячний дохід');
+
+                const resRevType = await fetch('/api/charts/revenueByRoomType');
+                const dataRevType = await resRevType.json();
+                renderPieChart(dataRevType, 'revenueByRoomTypeChart', 'Прибутковість категорій');
+            } catch (e) { console.error(e); }
+        }
+
+        function renderColumnChart(data, elementId, title) {
+            const table = new google.visualization.DataTable();
+            table.addColumn('string', 'Місяць');
+            table.addColumn('number', 'Сума');
+            data.forEach(item => table.addRow([item.label, item.count]));
+
+            new google.visualization.ColumnChart(document.getElementById(elementId)).draw(table, {
+                title: title,
+                legend: 'none',
+                colors: ['#28a745'],
+                chartArea: { width: '85%', height: '70%' },
+                vAxis: { minValue: 0, format: '#,### ' },
+                animation: { startup: true, duration: 800, easing: 'out' }
+            });
+        }
+
+        function renderPieChart(data, elementId, title) {
+            const table = new google.visualization.DataTable();
+            table.addColumn('string', 'Тип');
+            table.addColumn('number', 'Дохід');
+            data.forEach(item => table.addRow([item.label, item.count]));
+
+            new google.visualization.PieChart(document.getElementById(elementId)).draw(table, {
+                title: title,
+                pieHole: 0.4,
+                chartArea: { width: '100%', height: '80%' },
+                legend: { position: 'bottom' },
+                colors: ['#28a745', '#ffc107', '#17a2b8', '#dc3545', '#6610f2']
+            });
+        }
+    </script>
+}

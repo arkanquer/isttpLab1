@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "xNznTH38A0c=",
+  "dgSpecHash": "i6h+hqcZezM=",
   "success": true,
-  "projectFilePath": "/Users/yaroslavbyrak/HotelBookingSystem/HotelBookingSystem.csproj",
+  "projectFilePath": "/Users/yaroslavbyrak/isttpLab1/isttpLab1/HotelBookingSystem.csproj",
   "expectedPackageFiles": [
     "/Users/yaroslavbyrak/.nuget/packages/humanizer.core/2.14.1/humanizer.core.2.14.1.nupkg.sha512",
     "/Users/yaroslavbyrak/.nuget/packages/microsoft.build.framework/18.0.2/microsoft.build.framework.18.0.2.nupkg.sha512",

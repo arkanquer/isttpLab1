@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "/Users/yaroslavbyrak/HotelBookingSystem/HotelBookingSystem.csproj": {}
+    "/Users/yaroslavbyrak/isttpLab1/isttpLab1/HotelBookingSystem.csproj": {}
   },
   "projects": {
-    "/Users/yaroslavbyrak/HotelBookingSystem/HotelBookingSystem.csproj": {
+    "/Users/yaroslavbyrak/isttpLab1/isttpLab1/HotelBookingSystem.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/Users/yaroslavbyrak/HotelBookingSystem/HotelBookingSystem.csproj",
+        "projectUniqueName": "/Users/yaroslavbyrak/isttpLab1/isttpLab1/HotelBookingSystem.csproj",
         "projectName": "HotelBookingSystem",
-        "projectPath": "/Users/yaroslavbyrak/HotelBookingSystem/HotelBookingSystem.csproj",
+        "projectPath": "/Users/yaroslavbyrak/isttpLab1/isttpLab1/HotelBookingSystem.csproj",
         "packagesPath": "/Users/yaroslavbyrak/.nuget/packages/",
-        "outputPath": "/Users/yaroslavbyrak/HotelBookingSystem/obj/",
+        "outputPath": "/Users/yaroslavbyrak/isttpLab1/isttpLab1/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "/Users/yaroslavbyrak/.nuget/NuGet/NuGet.Config"
