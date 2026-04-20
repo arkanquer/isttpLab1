@@ -2,12 +2,12 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using HotelBookingSystem.Models;
 using System.Globalization;
+using Microsoft.AspNetCore.Authorization;
 
 namespace HotelBookingSystem.Controllers
 {
-    [Route("api/[controller]")]
-    [ApiController]
-    public class ChartsController : ControllerBase
+    [Authorize(Roles = "admin")]
+    public class ChartsController : Controller
     {
         private readonly HotelDbContext _context;
 
@@ -16,10 +16,16 @@ namespace HotelBookingSystem.Controllers
             _context = context;
         }
 
+        [HttpGet]
+        public IActionResult Index()
+        {
+            return View();
+        }
+
         private record ChartDataItem(string Label, decimal Count);
 
-        [HttpGet("revenueByRoomType")]
-        public async Task<JsonResult> GetRevenueByRoomType()
+        [HttpGet("api/charts/revenueByRoomType")]
+        public async Task<IActionResult> GetRevenueByRoomType()
         {
             var data = await _context.Bookings
                 .Include(b => b.Room)
@@ -29,12 +35,11 @@ namespace HotelBookingSystem.Controllers
                     g.Key ?? "Інше",
                     (decimal)g.Sum(b => b.Totalprice ?? 0)))
                 .ToListAsync();
-
-            return new JsonResult(data);
+            return Json(data);
         }
 
-        [HttpGet("revenueByMonth")]
-        public async Task<JsonResult> GetRevenueByMonth()
+        [HttpGet("api/charts/revenueByMonth")]
+        public async Task<IActionResult> GetRevenueByMonth()
         {
             var bookings = await _context.Bookings
                 .Where(b => b.Checkindate != null && b.Status != "Cancelled" && b.Totalprice != null)
@@ -47,8 +52,7 @@ namespace HotelBookingSystem.Controllers
                     $"{CultureInfo.GetCultureInfo("uk-UA").DateTimeFormat.GetMonthName(g.Key.Month)} {g.Key.Year}",
                     (decimal)g.Sum(b => b.Totalprice ?? 0)))
                 .ToList();
-
-            return new JsonResult(data);
+            return Json(data);
         }
     }
 }

@@ -5,6 +5,8 @@ namespace HotelBookingSystem.Models;
 
 public partial class Employee
 {
+    public bool IsActive { get; set; } = true;
+    public string? UserId { get; set; }
     public int Employeeid { get; set; }
 
     public string? Fullname { get; set; }

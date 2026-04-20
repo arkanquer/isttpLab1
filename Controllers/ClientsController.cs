@@ -1,42 +1,62 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using HotelBookingSystem.Models;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 
 namespace HotelBookingSystem.Controllers;
 
+[Authorize]
 public class ClientsController : Controller
 {
     private readonly HotelDbContext _context;
+    private readonly UserManager<User> _userManager;
 
-    public ClientsController(HotelDbContext context) => _context = context;
+    public ClientsController(HotelDbContext context, UserManager<User> userManager)
+    {
+        _context = context;
+        _userManager = userManager;
+    }
 
     public async Task<IActionResult> Index(string status = "active", string searchString = "")
     {
         ViewData["CurrentStatus"] = status;
         ViewData["CurrentFilter"] = searchString;
+
+        var userId = _userManager.GetUserId(User);
         var query = _context.Clients.AsQueryable();
 
-        if (status == "archived")
+        if (!User.IsInRole("admin"))
         {
-            query = query.Where(c => c.IsActive == false);
+            query = query.Where(c => c.UserId == userId);
         }
         else
         {
-            query = query.Where(c => c.IsActive == true);
+            if (status == "archived")
+            {
+                query = query.Where(c => c.IsActive == false);
+            }
+            else
+            {
+                query = query.Where(c => c.IsActive == true);
+            }
+
+            if (!string.IsNullOrWhiteSpace(searchString))
+            {
+                string s = $"%{searchString.Trim()}%";
+                query = query.Where(c => c.Fullname != null && EF.Functions.ILike(c.Fullname, s));
+            }
         }
 
-        if (!string.IsNullOrWhiteSpace(searchString))
-        {
-            string s = $"%{searchString.Trim()}%";
-            query = query.Where(c => c.Fullname != null && EF.Functions.ILike(c.Fullname, s));
-        }
         var clients = await query.OrderByDescending(c => c.Clientid).ToListAsync();
         return View(clients);
     }
 
+    [Authorize(Roles = "admin")]
     public IActionResult Create() => View();
 
     [HttpPost]
+    [Authorize(Roles = "admin")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(Client client)
     {
@@ -56,6 +76,7 @@ public class ClientsController : Controller
         return View(client);
     }
 
+    [Authorize(Roles = "admin")]
     public async Task<IActionResult> Edit(int? id)
     {
         if (id is null) return NotFound();
@@ -66,6 +87,7 @@ public class ClientsController : Controller
     }
 
     [HttpPost]
+    [Authorize(Roles = "admin")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Edit(int id, Client client)
     {
@@ -95,6 +117,7 @@ public class ClientsController : Controller
     }
 
     [HttpPost]
+    [Authorize(Roles = "admin")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Delete(int id)
     {
@@ -107,6 +130,7 @@ public class ClientsController : Controller
     }
 
     [HttpPost]
+    [Authorize(Roles = "admin")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Restore(int id)
     {

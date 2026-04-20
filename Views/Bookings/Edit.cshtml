@@ -15,41 +15,50 @@
                     <form asp-action="Edit">
                         @Html.AntiForgeryToken()
                         <input type="hidden" asp-for="Bookingid" />
-                        <input type="hidden" asp-for="Createdat" />
+                        <input type="hidden" asp-for="Totalprice" />
                         <input type="hidden" asp-for="Roompriceatbooking" />
+                        <input type="hidden" asp-for="Createdat" />
 
                         <div class="row">
-                            <div class="col-md-12 mb-3">
-                                <label class="form-label fw-bold text-muted">ID запису в системі</label>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold text-muted small">ID запису</label>
                                 <input class="form-control bg-light" value="@Model.Bookingid" readonly />
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold text-muted small">Поточна сума чеку</label>
+                                <input class="form-control bg-light fw-bold" value="@(Model.Totalprice?.ToString("N2") ?? "0.00") грн" readonly />
                             </div>
 
                             <div class="col-md-6 mb-3">
                                 <label class="form-label">Клієнт</label>
-                                <select asp-for="Clientid" class="form-select" asp-items="ViewBag.ClientIdList"></select>                            </div>
+                                <select asp-for="Clientid" class="form-select border-dark" asp-items="ViewBag.ClientIdList"></select>
+                            </div>
 
                             <div class="col-md-6 mb-3">
                                 <label class="form-label">Номер кімнати</label>
-                                <select asp-for="Roomid" class="form-select" asp-items="ViewBag.RoomIdList"></select>
+                                <select asp-for="Roomid" class="form-select border-dark" asp-items="ViewBag.RoomIdList"></select>
                             </div>
 
                             <div class="col-md-12 mb-3">
-                                <label class="form-label">Адміністратор</label>
-                                <select asp-for="Employeeid" class="form-select" asp-items="ViewBag.EmployeeIdList"></select>
+                                <label class="form-label">Відповідальний адміністратор</label>
+                                <select asp-for="Employeeid" class="form-select border-dark" asp-items="ViewBag.EmployeeIdList">
+                                    <option value="">-- Не призначено --</option>
+                                </select>
                             </div>
 
                             <div class="col-md-6 mb-3">
                                 <label class="form-label">Дата заїзду</label>
-                                <input asp-for="Checkindate" type="date" class="form-control" />
+                                <input asp-for="Checkindate" type="date" class="form-control border-dark" />
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label class="form-label">Дата виїзду</label>
-                                <input asp-for="Checkoutdate" type="date" class="form-control" />
+                                <input asp-for="Checkoutdate" type="date" class="form-control border-dark" />
                             </div>
 
                             <div class="col-md-12 mb-3">
                                 <label class="form-label">Статус бронювання</label>
-                                <select asp-for="Status" class="form-select">
+                                <select asp-for="Status" class="form-select border-dark">
+                                    <option value="pending">Очікує підтвердження</option>
                                     <option value="confirmed">Підтверджено</option>
                                     <option value="completed">Завершено (виїхав)</option>
                                     <option value="cancelled">Скасовано</option>
@@ -57,9 +66,9 @@
                             </div>
                         </div>
 
-                        <div class="d-flex justify-content-between mt-3">
-                            <a asp-action="Index" class="btn btn-outline-secondary">Скасувати</a>
-                            <button type="submit" class="btn btn-warning">Зберегти зміни</button>
+                        <div class="d-flex justify-content-between mt-4">
+                            <a asp-action="Index" class="btn btn-outline-secondary rounded-pill px-4">Скасувати</a>
+                            <button type="submit" class="btn btn-warning rounded-pill px-4 fw-bold">Зберегти зміни</button>
                         </div>
                     </form>
                 </div>

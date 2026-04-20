@@ -375,3 +375,4 @@
 /Users/yaroslavbyrak/isttpLab1/isttpLab1/obj/Debug/net10.0/HotelBookingSystem.genruntimeconfig.cache
 /Users/yaroslavbyrak/isttpLab1/isttpLab1/obj/Debug/net10.0/ref/HotelBookingSystem.dll
 /Users/yaroslavbyrak/isttpLab1/isttpLab1/obj/Debug/net10.0/compressed/nmo7t50ie6-{0}-oofcrjz93v-oofcrjz93v.gz
+/Users/yaroslavbyrak/isttpLab1/isttpLab1/bin/Debug/net10.0/Microsoft.AspNetCore.Identity.EntityFrameworkCore.dll

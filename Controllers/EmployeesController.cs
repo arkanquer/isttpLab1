@@ -1,9 +1,10 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using HotelBookingSystem.Models;
-
+using Microsoft.AspNetCore.Authorization;
 namespace HotelBookingSystem.Controllers;
 
+[Authorize(Roles = "admin")]
 public class EmployeesController : Controller
 {
     private readonly HotelDbContext _context;

@@ -1,0 +1,52 @@
+@using Microsoft.AspNetCore.Identity
+@model HotelBookingSystem.ViewModels.ChangeRoleViewModel
+
+@{
+    ViewData["Title"] = "Керування доступом";
+}
+
+<div class="container mt-5">
+    <div class="card shadow border-0 rounded-4 mx-auto" style="max-width: 500px;">
+        <div class="card-body p-5">
+            <h2 class="fw-bold mb-2">Зміна ролі</h2>
+            <p class="text-muted mb-4">Користувач: <strong class="text-dark">@Model.UserEmail</strong></p>
+
+            <form asp-action="Edit" method="post">
+                <input type="hidden" name="userId" value="@Model.UserId" />
+                
+                <div class="mb-4">
+                    <label class="form-label fw-bold text-secondary small text-uppercase mb-3 d-block">
+                        Оберіть рівень доступу
+                    </label>
+                    
+                    @foreach (var role in Model.AllRoles ?? new List<IdentityRole>())
+                    {
+                        <div class="form-check custom-radio-card mb-2 p-2 border rounded-3 transition-all">
+                            <input type="radio" name="roles" value="@role.Name" class="form-check-input ms-1" 
+                                   id="role_@role.Name"
+                                   @((Model.UserRoles is not null && role.Name is not null && Model.UserRoles.Contains(role.Name)) ? "checked=\"checked\"" : "") />
+                            
+                            <label class="form-check-label ms-3 fw-medium cursor-pointer" for="role_@role.Name">
+                                @(role.Name == "admin" ? "Адміністратор" : "Користувач")
+                            </label>
+                        </div>
+                    }
+                </div>
+                <div class="d-grid gap-2 d-md-flex justify-content-md-start mt-4">
+                    <button type="submit" class="btn btn-dark btn-lg px-5 rounded-pill shadow-sm fw-bold">
+                        Зберегти зміни
+                    </button>
+                    <a asp-action="UserList" class="btn btn-outline-secondary btn-lg px-4 rounded-pill">
+                        Скасувати
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    .transition-all { transition: all 0.2s ease-in-out; }
+    .custom-radio-card:hover { background-color: #f8f9fa; border-color: #dee2e6 !important; }
+    .cursor-pointer { cursor: pointer; }
+</style>

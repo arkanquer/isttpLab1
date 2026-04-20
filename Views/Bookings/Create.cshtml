@@ -1,53 +1,100 @@
 @model HotelBookingSystem.Models.Booking
 
-<div class="container mt-4">
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card shadow">
-                <div class="card-header bg-dark text-white">
-                    <h4 class="mb-0">Оформлення нового бронювання</h4>
+@{
+    ViewData["Title"] = "Бронювання номера";
+}
+
+<div class="container mt-5">
+    <div class="card shadow-lg border-0 rounded-4 mx-auto" style="max-width: 600px;">
+        <div class="card-body p-5">
+            <h2 class="text-center fw-bold mb-4">Бронювання номера</h2>
+
+            <form asp-action="Create">
+                <div asp-validation-summary="ModelOnly" class="text-danger small mb-3"></div>
+                @if (User.IsInRole("admin"))
+                {
+                    <div class="mb-3">
+                        <label class="form-label fw-bold text-secondary small text-uppercase">Клієнт</label>
+                        <select asp-for="Clientid" class="form-select border-dark shadow-sm" asp-items="ViewBag.ClientIdList">
+                            <option value="">Оберіть клієнта</option>
+                        </select>
+                        <span asp-validation-for="Clientid" class="text-danger small"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold text-secondary small text-uppercase">Відповідальний працівник</label>
+                        <select asp-for="Employeeid" class="form-select border-dark shadow-sm" asp-items="ViewBag.EmployeeIdList">
+                            <option value="">Оберіть працівника</option>
+                        </select>
+                        <span asp-validation-for="Employeeid" class="text-danger small"></span>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-bold text-secondary small text-uppercase">Вибір номера</label>
+                        <select asp-for="Roomid" class="form-select border-dark shadow-sm" asp-items="ViewBag.RoomIdList" id="adminRoomSelect">
+                            <option value="">Змінити номер</option>
+                        </select>
+                    </div>
+                }
+                else
+                {
+                    <input type="hidden" asp-for="Clientid" />
+                    <input type="hidden" asp-for="Roomid" id="userRoomHidden" />
+                }
+
+                <div class="alert alert-light border border-dark text-center py-4 mb-4 shadow-sm rounded-3">
+                    <span class="text-muted d-block small text-uppercase mb-1">Ви обрали номер:</span>
+                    <h2 class="fw-bold mb-0 text-dark" id="roomDisplay">
+                        @{
+                            var selectedRoom = ((SelectList)ViewBag.RoomIdList)?.FirstOrDefault(r => r.Value == Model.Roomid.ToString());
+                        }
+                        @(selectedRoom?.Text ?? "№" + (Model.Roomid != 0 ? Model.Roomid : "..."))
+                    </h2>
                 </div>
-                <div class="card-body">
-                    <form asp-action="Create">
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Клієнт</label>
-                                <select asp-for="Clientid" class="form-select" asp-items="ViewBag.ClientIdList">
-                                    <option value="">-- Оберіть клієнта --</option>
-                                </select>
-                            </div>
 
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Номер кімнати</label>
-                                <select asp-for="Roomid" class="form-select" asp-items="ViewBag.RoomIdList">
-                                    <option value="">-- Оберіть номер --</option>
-                                </select>
-                            </div>
-
-                            <div class="col-md-12 mb-3">
-                                <label class="form-label">Адміністратор (хто оформлює)</label>
-                                <select asp-for="Employeeid" class="form-select" asp-items="ViewBag.EmployeeIdList">
-                                    <option value="">-- Оберіть себе --</option>
-                                </select>
-                            </div>
-
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Дата заїзду</label>
-                                <input asp-for="Checkindate" type="date" class="form-control" required />
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Дата виїзду</label>
-                                <input asp-for="Checkoutdate" type="date" class="form-control" required />
-                            </div>
-                        </div>
-                        
-                        <div class="d-flex justify-content-between mt-3">
-                            <a asp-action="Index" class="btn btn-secondary">Скасувати</a>
-                            <button type="submit" class="btn btn-dark">Підтвердити бронювання</button>
-                        </div>
-                    </form>
+                <div class="row g-3">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold text-secondary small text-uppercase">Дата заїзду</label>
+                        <input asp-for="Checkindate" type="date" class="form-control border-dark shadow-sm" />
+                        <span asp-validation-for="Checkindate" class="text-danger small"></span>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold text-secondary small text-uppercase">Дата виїзду</label>
+                        <input asp-for="Checkoutdate" type="date" class="form-control border-dark shadow-sm" />
+                        <span asp-validation-for="Checkoutdate" class="text-danger small"></span>
+                    </div>
                 </div>
-            </div>
+
+                <div class="d-grid gap-2 mt-4">
+                    <button type="submit" class="btn btn-dark btn-lg rounded-pill shadow-sm py-3 fw-bold">
+                        Підтвердити бронювання
+                    </button>
+                    <a asp-controller="Rooms" asp-action="Index" class="btn btn-link text-muted text-decoration-none text-center small">
+                        Скасувати та повернутися
+                    </a>
+                </div>
+            </form>
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const adminSelect = document.getElementById("adminRoomSelect");
+            const display = document.getElementById("roomDisplay");
+
+            if (adminSelect) {
+                adminSelect.addEventListener("change", function () {
+                    const text = adminSelect.options[adminSelect.selectedIndex].text;
+                    if (adminSelect.value) {
+                        display.innerText = "№ " + text;
+                    } else {
+                        display.innerText = "№ ...";
+                    }
+                });
+            }
+        });
+    </script>
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

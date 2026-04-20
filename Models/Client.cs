@@ -5,6 +5,7 @@ namespace HotelBookingSystem.Models;
 
 public partial class Client
 {
+    public string? UserId { get; set; }
     public int Clientid { get; set; }
 
     public string? Fullname { get; set; }

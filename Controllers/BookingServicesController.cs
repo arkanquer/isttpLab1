@@ -38,7 +38,7 @@ public class BookingServicesController : Controller
             var existingBS = await _context.BookingServices
                 .FirstOrDefaultAsync(bs => bs.Bookingid == bookingId && bs.Serviceid == serviceId);
 
-            if (existingBS != null)
+            if (existingBS is not null)
             {
                 existingBS.Quantity = (existingBS.Quantity ?? 0) + quantity;
             }
