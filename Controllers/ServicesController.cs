@@ -44,11 +44,14 @@ public class ServicesController : Controller
             ViewBag.UserBookings = await _context.Bookings
                 .Include(b => b.Client)
                 .Where(b => b.Client != null && b.Client.UserId == userId)
-                .Where(b => b.Status != "Cancelled" && b.Status != "CheckedOut")
+                .Where(b => b.Status != null && 
+                            b.Status.ToLower() != "cancelled" && 
+                            b.Status.ToLower() != "checkedout")
                 .Where(b => b.Checkoutdate >= DateTime.Now.Date)
                 .OrderByDescending(b => b.Checkindate)
                 .ToListAsync();
         }
+
         var services = await query.OrderBy(s => s.Name).ToListAsync();
         return View(services);
     }
@@ -57,7 +60,7 @@ public class ServicesController : Controller
     [HttpPost]
     public async Task<IActionResult> UploadPhoto(int serviceId, IFormFile photo)
     {
-        if (photo != null && photo.Length > 0)
+        if (photo is not null && photo.Length > 0)
         {
             string uploadsFolder = Path.Combine(_hostEnvironment.WebRootPath, "images", "services");
             if (!Directory.Exists(uploadsFolder)) Directory.CreateDirectory(uploadsFolder);
@@ -81,6 +84,7 @@ public class ServicesController : Controller
                 Url = "/images/services/" + uniqueFileName,
                 Createdat = DateTime.Now
             };
+
             _context.Media.Add(media);
             await _context.SaveChangesAsync();
         }
@@ -139,7 +143,7 @@ public class ServicesController : Controller
     public async Task<IActionResult> Delete(int id)
     {
         var service = await _context.Services.FindAsync(id);
-        if (service != null)
+        if (service is not null)
         {
             service.IsAvailable = false;
             await _context.SaveChangesAsync();

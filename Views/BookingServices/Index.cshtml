@@ -34,20 +34,29 @@
             <div class="card shadow-sm border-0 mb-4">
                 <div class="card-header bg-dark text-white fw-bold">Додати послугу</div>
                 <div class="card-body">
-                    <form asp-action="AddService" method="post">
-                        <input type="hidden" name="bookingId" value="@Model.Bookingid" />
-                        <div class="mb-3">
-                            <label class="form-label small">Оберіть послугу</label>
-                            <select name="serviceId" class="form-select" asp-items="ViewBag.ServiceList">
-                                <option value="">Виберіть із списку</option>
-                            </select>
+                    @if (Model.Status != "CheckedOut" && Model.Status != "Cancelled")
+                    {
+                        <form asp-action="AddService" method="post">
+                            <input type="hidden" name="bookingId" value="@Model.Bookingid" />
+                            <div class="mb-3">
+                                <label class="form-label small">Оберіть послугу</label>
+                                <select name="serviceId" class="form-select" asp-items="ViewBag.ServiceList">
+                                    <option value="">Виберіть із списку</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label small">Кількість</label>
+                                <input type="number" name="quantity" value="1" min="1" class="form-control shadow-sm" />
+                            </div>
+                            <button type="submit" class="btn btn-primary w-100 shadow-sm">Додати</button>
+                        </form>
+                    }
+                    else
+                    {
+                        <div class="alert alert-info mb-0">
+                            Бронювання завершене або скасоване. Редагування послуг недоступне.
                         </div>
-                        <div class="mb-3">
-                            <label class="form-label small">Кількість</label>
-                            <input type="number" name="quantity" value="1" min="1" class="form-control shadow-sm" />
-                        </div>
-                        <button type="submit" class="btn btn-primary w-100 shadow-sm">➕ Додати</button>
-                    </form>
+                    }
                 </div>
             </div>
 
@@ -89,32 +98,42 @@
                                     <td>@item.Service?.Name</td>
                                     <td class="text-center">@item.Priceatbooking?.ToString("N2")</td>
                                     <td class="text-center">
-                                        <div class="btn-group btn-group-sm border rounded bg-white">
-                                            <form asp-action="UpdateQuantity" method="post">
-                                                <input type="hidden" name="bookingId" value="@item.Bookingid" />
-                                                <input type="hidden" name="serviceId" value="@item.Serviceid" />
-                                                <input type="hidden" name="delta" value="-1" />
-                                                <button type="submit" class="btn btn-light" @(item.Quantity <= 1 ? "disabled" : "")>-</button>
-                                            </form>
-                                            <span class="px-2 align-self-center fw-bold">@item.Quantity</span>
-                                            <form asp-action="UpdateQuantity" method="post">
-                                                <input type="hidden" name="bookingId" value="@item.Bookingid" />
-                                                <input type="hidden" name="serviceId" value="@item.Serviceid" />
-                                                <input type="hidden" name="delta" value="1" />
-                                                <button type="submit" class="btn btn-light">+</button>
-                                            </form>
-                                        </div>
+                                        @if (Model.Status != "CheckedOut" && Model.Status != "Cancelled")
+                                        {
+                                            <div class="btn-group btn-group-sm border rounded bg-white">
+                                                <form asp-action="UpdateQuantity" method="post">
+                                                    <input type="hidden" name="bookingId" value="@item.Bookingid" />
+                                                    <input type="hidden" name="serviceId" value="@item.Serviceid" />
+                                                    <input type="hidden" name="delta" value="-1" />
+                                                    <button type="submit" class="btn btn-light" @(item.Quantity <= 1 ? "disabled" : "")>-</button>
+                                                </form>
+                                                <span class="px-2 align-self-center fw-bold">@item.Quantity</span>
+                                                <form asp-action="UpdateQuantity" method="post">
+                                                    <input type="hidden" name="bookingId" value="@item.Bookingid" />
+                                                    <input type="hidden" name="serviceId" value="@item.Serviceid" />
+                                                    <input type="hidden" name="delta" value="1" />
+                                                    <button type="submit" class="btn btn-light">+</button>
+                                                </form>
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <span class="fw-bold">@item.Quantity</span>
+                                        }
                                     </td>
                                     <td class="text-end fw-bold">@rowSum.ToString("N2")</td>
                                     <td class="text-center">
-                                        <form asp-action="RemoveService" method="post" 
-                                              onsubmit="return confirm('Ви впевнені, що хочете видалити цю послугу з рахунку?');">
-                                            <input type="hidden" name="bookingId" value="@item.Bookingid" />
-                                            <input type="hidden" name="serviceId" value="@item.Serviceid" />
-                                            <button type="submit" class="btn btn-link text-danger p-0" title="Видалити послугу">
-                                                <i class="bi bi-trash3-fill fs-5"></i>
-                                            </button>
-                                        </form>
+                                        @if (Model.Status != "CheckedOut" && Model.Status != "Cancelled")
+                                        {
+                                            <form asp-action="RemoveService" method="post" 
+                                                  onsubmit="return confirm('Ви впевнені, що хочете видалити цю послугу з рахунку?');">
+                                                <input type="hidden" name="bookingId" value="@item.Bookingid" />
+                                                <input type="hidden" name="serviceId" value="@item.Serviceid" />
+                                                <button type="submit" class="btn btn-link text-danger p-0" title="Видалити послугу">
+                                                    <i class="bi bi-trash3-fill fs-5"></i>
+                                                </button>
+                                            </form>
+                                        }
                                     </td>
                                 </tr>
                             }

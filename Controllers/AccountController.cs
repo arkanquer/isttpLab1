@@ -12,8 +12,8 @@ public class AccountController : Controller
     private readonly HotelDbContext _context;
 
     public AccountController(UserManager<User> userManager,
-                             SignInManager<User> signInManager,
-                             HotelDbContext context)
+                            SignInManager<User> signInManager,
+                            HotelDbContext context)
     {
         _userManager = userManager;
         _signInManager = signInManager;

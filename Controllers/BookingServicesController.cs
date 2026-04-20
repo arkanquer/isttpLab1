@@ -28,40 +28,6 @@ public class BookingServicesController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> AddService(int bookingId, int serviceId, int quantity)
-    {
-        if (quantity <= 0) quantity = 1;
-        var booking = await _context.Bookings.FindAsync(bookingId);
-        var service = await _context.Services.FindAsync(serviceId);
-        if (booking is not null && service is not null)
-        {
-            var existingBS = await _context.BookingServices
-                .FirstOrDefaultAsync(bs => bs.Bookingid == bookingId && bs.Serviceid == serviceId);
-
-            if (existingBS is not null)
-            {
-                existingBS.Quantity = (existingBS.Quantity ?? 0) + quantity;
-            }
-            else
-            {
-                var bs = new BookingService
-                {
-                    Bookingid = bookingId,
-                    Serviceid = serviceId,
-                    Quantity = quantity,
-                    Priceatbooking = service.Price
-                };
-                _context.BookingServices.Add(bs);
-            }
-            decimal serviceSum = (service.Price ?? 0) * quantity;
-            booking.Totalprice = (booking.Totalprice ?? 0) + serviceSum;
-            await _context.SaveChangesAsync();
-        }
-        return RedirectToAction(nameof(Index), new { bookingId });
-    }
-
-    [HttpPost]
-    [ValidateAntiForgeryToken]
     public async Task<IActionResult> RemoveService(int bookingId, int serviceId)
     {
         var bs = await _context.BookingServices
@@ -73,7 +39,7 @@ public class BookingServicesController : Controller
             {
                 decimal amountToRemove = (bs.Priceatbooking ?? 0) * (bs.Quantity ?? 1);
                 bs.Booking.Totalprice = (bs.Booking.Totalprice ?? 0) - amountToRemove;
-                if (bs.Booking.Totalprice < 0) 
+                if (bs.Booking.Totalprice < 0)
                     bs.Booking.Totalprice = 0;
             }
             _context.BookingServices.Remove(bs);
@@ -102,6 +68,48 @@ public class BookingServicesController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    public async Task<IActionResult> AddService(int bookingId, int serviceId, int quantity)
+    {
+        if (quantity <= 0) quantity = 1;
+        var booking = await _context.Bookings.FindAsync(bookingId);
+        var service = await _context.Services.FindAsync(serviceId);
+
+        if (booking is null ||
+            booking.Status?.ToLower() == "cancelled" ||
+            booking.Status?.ToLower() == "checkedout")
+        {
+            return RedirectToAction("Index", "Services");
+        }
+
+        if (service is not null)
+        {
+            var existingBS = await _context.BookingServices
+                .FirstOrDefaultAsync(bs => bs.Bookingid == bookingId && bs.Serviceid == serviceId);
+
+            if (existingBS is not null)
+            {
+                existingBS.Quantity = (existingBS.Quantity ?? 0) + quantity;
+            }
+            else
+            {
+                var bs = new BookingService
+                {
+                    Bookingid = bookingId,
+                    Serviceid = serviceId,
+                    Quantity = quantity,
+                    Priceatbooking = service.Price
+                };
+                _context.BookingServices.Add(bs);
+            }
+            decimal serviceSum = (service.Price ?? 0) * quantity;
+            booking.Totalprice = (booking.Totalprice ?? 0) + serviceSum;
+            await _context.SaveChangesAsync();
+        }
+        return RedirectToAction(nameof(Index), new { bookingId });
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> UpdateQuantity(int bookingId, int serviceId, int delta)
     {
         var bs = await _context.BookingServices
@@ -111,6 +119,11 @@ public class BookingServicesController : Controller
 
         if (bs is not null && bs.Booking is not null)
         {
+            if (bs.Booking.Status == "CheckedOut" || bs.Booking.Status == "Cancelled")
+            {
+                return RedirectToAction(nameof(Index), new { bookingId });
+            }
+
             int newQuantity = (bs.Quantity ?? 1) + delta;
             if (newQuantity > 0)
             {

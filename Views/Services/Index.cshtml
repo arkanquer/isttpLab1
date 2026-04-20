@@ -27,12 +27,12 @@
     <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
         @foreach (var item in Model)
         {
-            var photo = ((List<Medium>)ViewBag.Photos)?.FirstOrDefault(m => m.Entityid == item.Serviceid);
+            var photo = ((List<Medium>?)ViewBag.Photos)?.FirstOrDefault(m => m.Entityid == item.Serviceid);
 
             <div class="col">
                 <div class="card h-100 shadow-sm border-0 rounded-4 overflow-hidden position-relative">
                     <div style="height: 220px; background-color: #f8f9fa;" class="position-relative">
-                        @if (photo != null)
+                        @if (photo is not null)
                         {
                             <img src="@photo.Url" class="w-100 h-100" style="object-fit: cover;" alt="@item.Name">
                         }
@@ -44,7 +44,7 @@
                             </div>
                         }
                         <span class="position-absolute top-0 end-0 m-3 badge rounded-pill @(item.IsAvailable ? "bg-success" : "bg-warning text-dark")">
-                            @(item.IsAvailable ? "available" : "unavailable")
+                            @(item.IsAvailable ? "Вільна" : "Недоступна")
                         </span>
                     </div>
 
@@ -80,28 +80,21 @@
                                     </button>
                                 </form>
                             </div>
-                            @if (ViewBag.ActiveBookingId != null)
-                            {
-                                <form asp-controller="Bookings" asp-action="AddService" method="post" class="mt-2">
-                                    <input type="hidden" name="bookingId" value="@ViewBag.ActiveBookingId" />
-                                    <input type="hidden" name="serviceId" value="@item.Serviceid" />
-                                    <button type="submit" class="btn btn-dark w-100 btn-sm rounded-pill">Додати до чеку #@ViewBag.ActiveBookingId</button>
-                                </form>
-                            }
                         }
                         else
                         {
                             <div class="mt-3">
-                                @if (ViewBag.UserBookings != null && ((IEnumerable<Booking>)ViewBag.UserBookings).Any())
+                                @if (ViewBag.UserBookings is not null && ((IEnumerable<Booking>)ViewBag.UserBookings).Any())
                                 {
                                     <form asp-controller="Bookings" asp-action="AddService" method="post">
                                         <input type="hidden" name="serviceId" value="@item.Serviceid" />
-                                        <div class="input-group input-group-sm mb-2">
-                                            <label class="input-group-text bg-white border-dark small">Ваші броні:</label>
-                                            <select name="bookingId" class="form-select border-dark small">
+                                        <div class="mb-2">
+                                            <select name="bookingId" class="form-select form-select-sm border-dark shadow-sm">
                                                 @foreach (var b in (IEnumerable<Booking>)ViewBag.UserBookings)
                                                 {
-                                                    <option value="@b.Bookingid">#@b.Bookingid (@b.Checkindate?.ToString("dd.MM"))</option>
+                                                    <option value="@b.Bookingid">
+                                                        Ваше бронювання: (@b.Checkindate?.ToString("dd.MM") — @b.Checkoutdate?.ToString("dd.MM"))
+                                                    </option>
                                                 }
                                             </select>
                                         </div>
