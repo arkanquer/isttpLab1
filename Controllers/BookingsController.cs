@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using HotelBookingSystem.Models;
+using HotelBookingSystem.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 
@@ -53,7 +54,7 @@ public class BookingsController : Controller
         var bookings = await _context.Bookings
             .Include(b => b.Room)
             .Include(b => b.BookingServices).ThenInclude(bs => bs.Service)
-            .Where(b => b.Client!.UserId == userId)
+            .Where(b => b.Client != null && b.Client.UserId == userId)
             .OrderByDescending(b => b.Createdat)
             .ToListAsync();
         return View(bookings);
@@ -61,117 +62,106 @@ public class BookingsController : Controller
 
     public async Task<IActionResult> Create(int? roomId)
     {
-        var booking = new Booking();
-        if (roomId.HasValue) booking.Roomid = roomId.Value;
+        if (roomId is null) return NotFound();
 
-        if (!User.IsInRole("admin"))
+        var services = await _context.Services.Where(s => s.IsAvailable == true).ToListAsync();
+        
+        var model = new CreateBookingViewModel
         {
-            var userId = _userManager.GetUserId(User);
-            var client = await _context.Clients.FirstOrDefaultAsync(c => c.UserId == userId);
-            if (client != null) booking.Clientid = client.Clientid;
+            RoomId = roomId.Value,
+            CheckInDate = DateTime.Now,
+            CheckOutDate = DateTime.Now.AddDays(1),
+            AvailableServices = services.Select(s => new ServiceSelectionViewModel
+            {
+                ServiceId = s.Serviceid,
+                Name = s.Name ?? "Без назви",
+                Price = s.Price ?? 0
+            }).ToList()
+        };
+
+        if (User.IsInRole("admin"))
+        {
+            await PopulateDropDownLists();
         }
 
-        await PopulateDropDownLists(booking);
-        return View(booking);
+        return View(model);
     }
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Create(Booking booking)
+    public async Task<IActionResult> Create(CreateBookingViewModel model)
     {
-        if (!User.IsInRole("admin"))
+        if (model.CheckInDate >= model.CheckOutDate)
         {
-            var userId = _userManager.GetUserId(User);
-            var client = await _context.Clients.FirstOrDefaultAsync(c => c.UserId == userId);
-            if (client != null) booking.Clientid = client.Clientid;
-            booking.Status = "Pending";
-            booking.Employeeid = null;
-        }
-        else
-        {
-            booking.Status = "Confirmed";
-        }
-
-        if (booking.Checkindate >= booking.Checkoutdate)
             ModelState.AddModelError("", "Дата виїзду має бути пізніше дати заїзду.");
+        }
 
         bool isOverlapping = await _context.Bookings.AnyAsync(b =>
-            b.Roomid == booking.Roomid &&
+            b.Roomid == model.RoomId &&
             b.Status != "Cancelled" &&
-            booking.Checkindate < b.Checkoutdate &&
-            booking.Checkoutdate > b.Checkindate);
+            model.CheckInDate < b.Checkoutdate &&
+            model.CheckOutDate > b.Checkindate);
 
-        if (isOverlapping) ModelState.AddModelError("", "Цей номер уже зайнятий на вибрані дати.");
+        if (isOverlapping)
+        {
+            ModelState.AddModelError("", "Цей номер уже зайнятий на вибрані дати.");
+        }
 
         if (ModelState.IsValid)
         {
-            var room = await _context.Rooms.FindAsync(booking.Roomid);
-            if (room != null)
+            var room = await _context.Rooms.FindAsync(model.RoomId);
+            if (room is not null)
             {
-                var days = (int)(booking.Checkoutdate!.Value - booking.Checkindate!.Value).TotalDays;
-                if (days < 1) days = 1;
+                var booking = new Booking
+                {
+                    Roomid = model.RoomId,
+                    Checkindate = model.CheckInDate,
+                    Checkoutdate = model.CheckOutDate,
+                    Createdat = DateTime.Now,
+                    Roompriceatbooking = room.Pricepernight,
+                    Status = User.IsInRole("admin") ? "Confirmed" : "Pending"
+                };
 
-                booking.Roompriceatbooking = room.Pricepernight;
-                booking.Totalprice = (decimal)days * (room.Pricepernight ?? 0);
-                booking.Createdat = DateTime.Now;
+                if (!User.IsInRole("admin"))
+                {
+                    var userId = _userManager.GetUserId(User);
+                    var client = await _context.Clients.FirstOrDefaultAsync(c => c.UserId == userId);
+                    if (client is not null) booking.Clientid = client.Clientid;
+                }
 
-                _context.Add(booking);
+                _context.Bookings.Add(booking);
                 await _context.SaveChangesAsync();
-                await SaveHistory(booking.Bookingid, "New", booking.Status!);
+
+                decimal servicesSum = 0;
+                foreach (var s in model.AvailableServices.Where(x => x.IsSelected))
+                {
+                    var bs = new BookingService
+                    {
+                        Bookingid = booking.Bookingid,
+                        Serviceid = s.ServiceId,
+                        Quantity = s.Quantity > 0 ? s.Quantity : 1,
+                        Priceatbooking = s.Price
+                    };
+                    _context.BookingServices.Add(bs);
+                    // ВИПРАВЛЕНО: Додано перевірку на null для Quantity
+                    servicesSum += s.Price * (bs.Quantity ?? 1);
+                }
+
+                var days = (int)(booking.Checkoutdate.Value - booking.Checkindate.Value).TotalDays;
+                if (days < 1) days = 1;
+                
+                // ВИПРАВЛЕНО: Розрахунок підсумкової суми
+                booking.Totalprice = ((decimal)days * (room.Pricepernight ?? 0)) + servicesSum;
+
+                await _context.SaveChangesAsync();
+                await SaveHistory(booking.Bookingid, "New", booking.Status ?? "Pending");
 
                 return User.IsInRole("admin") ? RedirectToAction(nameof(Index)) : RedirectToAction(nameof(MyBookings));
             }
         }
 
-        await PopulateDropDownLists(booking);
-        return View(booking);
-    }
-
-    [HttpPost]
-    [ValidateAntiForgeryToken]
-    public async Task<IActionResult> AddService(int bookingId, int serviceId)
-    {
-        var booking = await _context.Bookings
-            .Include(b => b.Client)
-            .Include(b => b.BookingServices)
-            .FirstOrDefaultAsync(b => b.Bookingid == bookingId);
-        
-        var service = await _context.Services.FindAsync(serviceId);
-
-        if (booking == null || service == null) return NotFound();
-
-        if (!User.IsInRole("admin"))
-        {
-            var userId = _userManager.GetUserId(User);
-            if (booking.Client?.UserId != userId) return Forbid();
-        }
-
-        var existingService = booking.BookingServices
-            .FirstOrDefault(bs => bs.Serviceid == serviceId);
-
-        if (existingService != null)
-        {
-            existingService.Quantity += 1;
-            _context.Update(existingService);
-        }
-        else
-        {
-            var bookingService = new BookingService
-            {
-                Bookingid = bookingId,
-                Serviceid = serviceId,
-                Priceatbooking = service.Price ?? 0,
-                Quantity = 1
-            };
-            _context.BookingServices.Add(bookingService);
-        }
-
-        booking.Totalprice += service.Price ?? 0;
-        await _context.SaveChangesAsync();
-
-        return User.IsInRole("admin") 
-            ? RedirectToAction(nameof(Edit), new { id = bookingId }) 
-            : RedirectToAction(nameof(MyBookings));
+        if (User.IsInRole("admin")) await PopulateDropDownLists();
+        return View(model);
     }
 
     [Authorize(Roles = "admin")]
@@ -202,7 +192,7 @@ public class BookingsController : Controller
             try
             {
                 var room = await _context.Rooms.FindAsync(booking.Roomid);
-                if (room != null)
+                if (room is not null)
                 {
                     var days = (int)(booking.Checkoutdate!.Value - booking.Checkindate!.Value).TotalDays;
                     if (days < 1) days = 1;
@@ -211,16 +201,16 @@ public class BookingsController : Controller
 
                     var servicesSum = await _context.BookingServices
                         .Where(bs => bs.Bookingid == id)
-                        .SumAsync(bs => (bs.Priceatbooking * bs.Quantity));
+                        .SumAsync(bs => (bs.Priceatbooking ?? 0) * (bs.Quantity ?? 0));
 
                     booking.Totalprice = ((decimal)days * (room.Pricepernight ?? 0)) + servicesSum;
                 }
 
                 var oldBooking = await _context.Bookings.AsNoTracking().FirstOrDefaultAsync(b => b.Bookingid == id);
                 _context.Update(booking);
-                if (oldBooking != null && oldBooking.Status != booking.Status)
+                if (oldBooking is not null && oldBooking.Status != booking.Status)
                 {
-                    await SaveHistory(id, oldBooking.Status!, booking.Status!);
+                    await SaveHistory(id, oldBooking.Status ?? "Unknown", booking.Status ?? "Unknown");
                 }
                 await _context.SaveChangesAsync();
             }
@@ -241,18 +231,14 @@ public class BookingsController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Cancel(int id)
     {
-        var booking = await _context.Bookings
-            .Include(b => b.Room)
-            .FirstOrDefaultAsync(b => b.Bookingid == id);
-
-        if (booking != null)
+        var booking = await _context.Bookings.FindAsync(id);
+        if (booking is not null)
         {
             string oldStatus = booking.Status ?? "Unknown";
             booking.Status = "Cancelled";
             await SaveHistory(id, oldStatus, "Cancelled");
             await _context.SaveChangesAsync();
         }
-
         return RedirectToAction(nameof(Index));
     }
 
@@ -261,10 +247,10 @@ public class BookingsController : Controller
         var clientsQuery = _context.Clients.Where(c => c.IsActive == true || (booking != null && c.Clientid == booking.Clientid));
         ViewBag.ClientIdList = new SelectList(await clientsQuery.OrderBy(c => c.Fullname).ToListAsync(), "Clientid", "Fullname", booking?.Clientid);
 
-        var employeesQuery = _context.Employees.Where(e => (e.Position != "Звільнений" && e.Position != "fired") || (booking != null && e.Employeeid == booking.Employeeid));
+        var employeesQuery = _context.Employees.Where(e => e.Position != "fired" || (booking != null && e.Employeeid == booking.Employeeid));
         ViewBag.EmployeeIdList = new SelectList(await employeesQuery.OrderBy(e => e.Fullname).ToListAsync(), "Employeeid", "Fullname", booking?.Employeeid);
 
-        var roomsQuery = _context.Rooms.Where(r => (r.Status != "Maintenance" && r.Status != "archived") || (booking != null && r.Roomid == booking.Roomid));
+        var roomsQuery = _context.Rooms.Where(r => r.Status != "archived" || (booking != null && r.Roomid == booking.Roomid));
         ViewBag.RoomIdList = new SelectList(await roomsQuery.OrderBy(r => r.Roomnumber).ToListAsync(), "Roomid", "Roomnumber", booking?.Roomid);
     }
 

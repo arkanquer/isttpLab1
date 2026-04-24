@@ -2,25 +2,28 @@
     ViewData["Title"] = "Головна";
 }
 
-<div class="text-center mt-5">
-    <div class="py-5">
-        <h1 class="display-3 fw-bold mb-4" style="font-family: 'Playfair Display', serif;">
-            Відпочинок, на який ви заслуговуєте
-        </h1>
-        <p class="lead text-muted mb-5">
-            Затишні номери, професійний сервіс та незабутня атмосфера у самому серці міста.
-        </p>
-        
-        <div class="d-grid gap-3 d-sm-flex justify-content-sm-center">
-            <a asp-controller="Rooms" asp-action="Index" class="btn btn-dark btn-lg px-5 rounded-pill shadow-sm">
-                Переглянути номери
-            </a>
-            @if (User.Identity?.IsAuthenticated == true)
-            {
-                <a asp-controller="Bookings" asp-action="MyBookings" class="btn btn-outline-secondary btn-lg px-5 rounded-pill">
-                    Мої броні
+@if (!User.IsInRole("admin"))
+{
+    <div class="text-center mt-5">
+        <div class="py-5">
+            <h1 class="display-3 fw-bold mb-4">
+                Відпочинок, на який ви заслуговуєте
+            </h1>
+            <p class="lead text-muted mb-5">
+                Затишні номери, професійний сервіс та незабутня атмосфера у самому серці міста.
+            </p>
+            
+            <div class="d-grid gap-3 d-sm-flex justify-content-sm-center">
+                <a asp-controller="Rooms" asp-action="Index" class="btn btn-dark btn-lg px-5 rounded-pill shadow-sm">
+                    Переглянути номери
                 </a>
-            }
+                @if (User.Identity?.IsAuthenticated == true)
+                {
+                    <a asp-controller="Bookings" asp-action="MyBookings" class="btn btn-outline-secondary btn-lg px-5 rounded-pill">
+                        Мої броні
+                    </a>
+                }
+            </div>
         </div>
     </div>
-</div>
+}
