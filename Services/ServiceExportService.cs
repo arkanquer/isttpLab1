@@ -25,15 +25,17 @@ public class ServiceExportService : IExportService<Service>
             worksheet.Cell(1, i + 1).Style.Fill.BackgroundColor = XLColor.LightGray;
         }
 
-        var services = await _context.Services.ToListAsync(cancellationToken);
-        int rowIndex = 2;
+        var services = await _context.Services
+            .Where(s => s.IsAvailable)
+            .ToListAsync(cancellationToken);
 
+        int rowIndex = 2;
         foreach (var s in services)
         {
             worksheet.Cell(rowIndex, 1).Value = s.Name;
             worksheet.Cell(rowIndex, 2).Value = s.Price ?? 0;
             worksheet.Cell(rowIndex, 3).Value = s.Description ?? "Без опису";
-            worksheet.Cell(rowIndex, 4).Value = s.IsAvailable ? "Доступна" : "В архіві";
+            worksheet.Cell(rowIndex, 4).Value = "Доступна";
             rowIndex++;
         }
 
