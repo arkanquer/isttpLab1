@@ -5,9 +5,17 @@
         <h2 class="fw-bold text-dark text-uppercase">Каталог послуг</h2>
         @if (User.IsInRole("admin"))
         {
-            <a asp-action="Create" class="btn btn-success rounded-pill shadow-sm">
-                <i class="bi bi-plus-circle"></i> Додати послугу
-            </a>
+            <div class="d-flex gap-2">
+                <a asp-action="Import" class="btn btn-outline-dark rounded-pill shadow-sm">
+                    <i class="bi bi-file-earmark-arrow-up"></i> Імпортувати
+                </a>
+                <a asp-action="Export" class="btn btn-outline-success rounded-pill shadow-sm">
+                    <i class="bi bi-file-earmark-excel"></i> Експортувати
+                </a>
+                <a asp-action="Create" class="btn btn-success rounded-pill shadow-sm">
+                    <i class="bi bi-plus-circle"></i> Додати послугу
+                </a>
+            </div>
         }
     </div>
 

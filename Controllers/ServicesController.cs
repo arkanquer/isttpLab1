@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using HotelBookingSystem.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
+using HotelBookingSystem.Services;
 
 namespace HotelBookingSystem.Controllers;
 
@@ -22,7 +23,7 @@ public class ServicesController : Controller
     public async Task<IActionResult> Index(string status = "available")
     {
         ViewData["CurrentStatus"] = status;
-        
+
         var query = _context.Services.AsQueryable();
 
         if (status == "archived")
@@ -44,8 +45,8 @@ public class ServicesController : Controller
             ViewBag.UserBookings = await _context.Bookings
                 .Include(b => b.Client)
                 .Where(b => b.Client != null && b.Client.UserId == userId)
-                .Where(b => b.Status != null && 
-                            b.Status.ToLower() != "cancelled" && 
+                .Where(b => b.Status != null &&
+                            b.Status.ToLower() != "cancelled" &&
                             b.Status.ToLower() != "checkedout")
                 .Where(b => b.Checkoutdate >= DateTime.Now.Date)
                 .OrderByDescending(b => b.Checkindate)
@@ -162,5 +163,40 @@ public class ServicesController : Controller
             await _context.SaveChangesAsync();
         }
         return RedirectToAction(nameof(Index), new { status = "archived" });
+    }
+
+    [HttpGet]
+    public IActionResult Import() => View();
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Import(IFormFile fileExcel, CancellationToken cancellationToken)
+    {
+        if (fileExcel is not null && fileExcel.ContentType == "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+        {
+            using var stream = fileExcel.OpenReadStream();
+            var importService = new ServiceImportService(_context);
+            await importService.ImportFromStreamAsync(stream, cancellationToken);
+            return RedirectToAction(nameof(Index));
+        }
+        ModelState.AddModelError("", "Будь ласка, завантажте валідний Excel-файл (.xlsx)");
+        return View();
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> Export(CancellationToken cancellationToken)
+    {
+        string contentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+        var factory = new ServiceDataPortServiceFactory(_context);
+        var exportService = factory.GetExportService(contentType);
+
+        var memoryStream = new MemoryStream();
+        await exportService.WriteToAsync(memoryStream, cancellationToken);
+
+        memoryStream.Position = 0;
+        return new FileStreamResult(memoryStream, contentType)
+        {
+            FileDownloadName = $"hotel_services_{DateTime.Now:yyyyMMdd}.xlsx"
+        };
     }
 }

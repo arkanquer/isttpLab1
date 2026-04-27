@@ -376,3 +376,10 @@
 /Users/yaroslavbyrak/isttpLab1/isttpLab1/obj/Debug/net10.0/ref/HotelBookingSystem.dll
 /Users/yaroslavbyrak/isttpLab1/isttpLab1/obj/Debug/net10.0/compressed/nmo7t50ie6-{0}-oofcrjz93v-oofcrjz93v.gz
 /Users/yaroslavbyrak/isttpLab1/isttpLab1/bin/Debug/net10.0/Microsoft.AspNetCore.Identity.EntityFrameworkCore.dll
+/Users/yaroslavbyrak/isttpLab1/isttpLab1/bin/Debug/net10.0/ClosedXML.dll
+/Users/yaroslavbyrak/isttpLab1/isttpLab1/bin/Debug/net10.0/DocumentFormat.OpenXml.dll
+/Users/yaroslavbyrak/isttpLab1/isttpLab1/bin/Debug/net10.0/ExcelNumberFormat.dll
+/Users/yaroslavbyrak/isttpLab1/isttpLab1/bin/Debug/net10.0/Irony.dll
+/Users/yaroslavbyrak/isttpLab1/isttpLab1/bin/Debug/net10.0/SixLabors.Fonts.dll
+/Users/yaroslavbyrak/isttpLab1/isttpLab1/bin/Debug/net10.0/System.IO.Packaging.dll
+/Users/yaroslavbyrak/isttpLab1/isttpLab1/bin/Debug/net10.0/XLParser.dll
